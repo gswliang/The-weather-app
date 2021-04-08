@@ -48,6 +48,8 @@ export default function App() {
       navigator.geolocation.getCurrentPosition((res) => {
         setLong(res.coords.longitude);
         setLat(res.coords.latitude);
+        getTemp(`${res.coords.latitude},${res.coords.longitude}`);
+        // getTemp(`${lat},${long}`);
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
@@ -69,14 +71,11 @@ export default function App() {
       .then((res) => {
         // get long, lat of the first searched result in the array
         const [lat, long] = res.data.features[0].center;
-        console.log("lat", lat);
-        console.log("long", long);
+        getTemp(`${long},${lat}`);
       })
       .catch((e) => {
         console.error(e);
       });
-
-    getTemp(inputText);
   };
 
   const Search = (

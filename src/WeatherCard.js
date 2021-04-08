@@ -49,6 +49,7 @@ const WeatherCard = ({ weather }) => {
   let region = "Taipei";
   let tempCity = "Linkou";
 
+  console.log(weather);
   if (weather !== undefined) {
     icon = weather.current.weather_icons[0];
     iconText = weather.current.weather_descriptions[0];
