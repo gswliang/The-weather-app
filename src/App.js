@@ -58,8 +58,8 @@ export default function App() {
     init();
   }, []);
 
-  const getTemp = async () => {
-    const { data } = await getTemperature(inputText);
+  const getTemp = async (city) => {
+    const { data } = await getTemperature(city);
     setWeatherData(data);
   };
 
@@ -76,7 +76,7 @@ export default function App() {
         console.error(e);
       });
 
-    getTemp();
+    getTemp(inputText);
   };
 
   const Search = (
