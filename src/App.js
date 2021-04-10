@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./styles.css";
 import styled from "styled-components";
 import WeatherCard from "./WeatherCard";
@@ -39,17 +39,17 @@ const SearchButton = styled.button`
 export default function App() {
   const [inputText, setInputText] = useState("");
   const [weatherData, setWeatherData] = useState();
-  const [long, setLong] = useState();
-  const [lat, setLat] = useState();
+  const long = useRef(null);
+  const lat = useRef(null);
 
   const init = () => {
     // get long/lat of the current location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((res) => {
-        setLong(res.coords.longitude);
-        setLat(res.coords.latitude);
-        getTemp(`${res.coords.latitude},${res.coords.longitude}`);
-        // getTemp(`${lat},${long}`);
+        long.current = res.coords.longitude;
+        lat.current = res.coords.latitude;
+        console.log(long.current, lat.current);
+        // getTemp(`${long},${lat}`);
       });
     } else {
       console.log("Geolocation is not supported by this browser.");

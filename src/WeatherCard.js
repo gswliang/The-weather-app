@@ -7,6 +7,7 @@ const WeatherCardContainer = styled.div`
   border-radius: 15px;
   background-color: #fae3e4;
   padding: 20px 40px;
+  position: fixed;
   display: flex;
   text-align: center;
   color: #9d9691;
@@ -48,14 +49,14 @@ const WeatherCard = ({ weather }) => {
   let temp = "16";
   let region = "Taipei";
   let tempCity = "Linkou";
-
   console.log(weather);
+
   if (weather !== undefined) {
-    icon = weather.current.weather_icons[0];
-    iconText = weather.current.weather_descriptions[0];
-    temp = weather.current.temperature;
-    region = weather.location.region;
-    tempCity = weather.location.name;
+    // icon = weather.current.weather_icons[0];
+    // iconText = weather.current.weather_descriptions[0];
+    // temp = weather.current.temperature;
+    // region = weather.location.region;
+    // tempCity = weather.location.name;
   }
 
   return (
