@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import styled from "styled-components";
 import cloudyIcon from "./img/cloudy.png";
 
@@ -43,34 +44,39 @@ const WeatherTempLocation = styled.p`
   margin-top: 10px;
 `;
 
-const WeatherCard = ({ weather }) => {
-  let icon = cloudyIcon;
-  let iconText = "cloudy";
-  let temp = "16";
-  let region = "Taipei";
-  let tempCity = "Linkou";
-  console.log(weather);
+const WeatherCard = ({ weather, isLoading, setIsLoading }) => {
+  useEffect(() => {
+    if (weather === undefined) {
+      setIsLoading(true);
+    }
+    setIsLoading(false);
+  });
 
-  if (weather !== undefined) {
-    // icon = weather.current.weather_icons[0];
-    // iconText = weather.current.weather_descriptions[0];
-    // temp = weather.current.temperature;
-    // region = weather.location.region;
-    // tempCity = weather.location.name;
-  }
+  const status = () => {
+    if (!isLoading && weather !== undefined) {
+      const iconText = weather.current.weather_descriptions[0];
+      const icon = weather.current.weather_icons[0];
+      const temp = weather.current.temperature;
+      const region = weather.location.region;
+      const tempCity = weather.location.name;
 
-  return (
-    <WeatherCardContainer>
-      <WeatherIconWrapper>
-        <WeatherIcon src={icon} alt="icon" />
-        <WeatherIconText>{iconText}</WeatherIconText>
-      </WeatherIconWrapper>
-      <WeatherTempWrapper>
-        <WeatherTemp>{temp}&deg;</WeatherTemp>
-        <WeatherTempLocation>{`${region}, ${tempCity}`}</WeatherTempLocation>
-      </WeatherTempWrapper>
-    </WeatherCardContainer>
-  );
+      return (
+        <WeatherCardContainer>
+          <WeatherIconWrapper>
+            <WeatherIcon src={icon} alt="icon" />
+            <WeatherIconText>{iconText}</WeatherIconText>
+          </WeatherIconWrapper>
+          <WeatherTempWrapper>
+            <WeatherTemp>{temp}&deg;</WeatherTemp>
+            <WeatherTempLocation>{`${region}, ${tempCity}`}</WeatherTempLocation>
+          </WeatherTempWrapper>
+        </WeatherCardContainer>
+      );
+    }
+
+    return null;
+  };
+  return status();
 };
 
 export default WeatherCard;

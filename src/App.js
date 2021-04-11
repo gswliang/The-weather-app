@@ -3,6 +3,7 @@ import "./styles.css";
 import styled from "styled-components";
 import WeatherCard from "./WeatherCard";
 import Input from "./Input";
+import Loader from "./Loader";
 import { getGeoLocation, getTemperature } from "./api";
 
 const WeatherMain = styled.div`
@@ -38,6 +39,7 @@ const SearchButton = styled.button`
 
 export default function App() {
   const [inputText, setInputText] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [weatherData, setWeatherData] = useState();
   const long = useRef(null);
   const lat = useRef(null);
@@ -48,8 +50,8 @@ export default function App() {
       navigator.geolocation.getCurrentPosition((res) => {
         long.current = res.coords.longitude;
         lat.current = res.coords.latitude;
-        console.log(long.current, lat.current);
-        // getTemp(`${long},${lat}`);
+        getTemp(`${lat.current},${long.current}`);
+        setIsLoading(false);
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
@@ -70,8 +72,8 @@ export default function App() {
     getGeoLocation(inputText)
       .then((res) => {
         // get long, lat of the first searched result in the array
-        const [lat, long] = res.data.features[0].center;
-        getTemp(`${long},${lat}`);
+        [lat.current, long.current] = res.data.features[0].center;
+        getTemp(`${long.current},${lat.current}`);
       })
       .catch((e) => {
         console.error(e);
@@ -82,8 +84,12 @@ export default function App() {
     <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>
   );
 
-  return (
-    <div className="App">
+  const renderOptions = () => {
+    if (isLoading) {
+      return <Loader message="Loading .." />;
+    }
+
+    return (
       <WeatherMain>
         <Title>The Weather App</Title>
         <SearchInput
@@ -94,8 +100,13 @@ export default function App() {
           }}
           suffix={Search}
         />
-        <WeatherCard weather={weatherData} />
+        <WeatherCard
+          weather={weatherData}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+        />
       </WeatherMain>
-    </div>
-  );
+    );
+  };
+  return <div className="App">{renderOptions()}</div>;
 }
