@@ -62,8 +62,8 @@ export default function App() {
     init();
   }, []);
 
-  const getTemp = async (city) => {
-    const { data } = await getTemperature(city);
+  const getTemp = async (coordinate) => {
+    const { data } = await getTemperature(coordinate);
     setWeatherData(data);
   };
 
