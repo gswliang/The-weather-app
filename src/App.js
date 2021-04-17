@@ -86,7 +86,10 @@ export default function App() {
 
   const Search = <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>;
 
+  const NoWeather = <h1>No weather data...</h1>;
+
   const Loading = <Loader message="Loading .." />;
+
   const WeatherInfo = (
     <WeatherMain>
       <Title>The Weather App</Title>
@@ -98,7 +101,7 @@ export default function App() {
         }}
         suffix={Search}
       />
-      <WeatherCard weather={weatherData} />
+      {weatherData ? <WeatherCard weather={weatherData} /> : NoWeather}
     </WeatherMain>
   );
 
