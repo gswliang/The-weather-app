@@ -44,16 +44,9 @@ const WeatherTempLocation = styled.p`
   margin-top: 10px;
 `;
 
-const WeatherCard = ({ weather, isLoading, setIsLoading }) => {
-  useEffect(() => {
-    if (weather === undefined) {
-      setIsLoading(true);
-    }
-    setIsLoading(false);
-  });
-
+const WeatherCard = ({ weather }) => {
   const status = () => {
-    if (!isLoading && weather !== undefined) {
+    if (weather) {
       const iconText = weather.current.weather_descriptions[0];
       const icon = weather.current.weather_icons[0];
       const temp = weather.current.temperature;

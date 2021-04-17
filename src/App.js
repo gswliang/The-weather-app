@@ -39,23 +39,22 @@ const SearchButton = styled.button`
 
 export default function App() {
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [weatherData, setWeatherData] = useState();
-  const long = useRef(null);
-  const lat = useRef(null);
 
   const init = () => {
     // get long/lat of the current location
+    setIsLoading(true);
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((res) => {
-        long.current = res.coords.longitude;
-        lat.current = res.coords.latitude;
-        getTemp(`${lat.current},${long.current}`);
-        setIsLoading(false);
+        getTemp(`${res.coords.latitude},${res.coords.longitude}`).then((data) => {
+          setWeatherData(data);
+        });
       });
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -64,49 +63,44 @@ export default function App() {
 
   const getTemp = async (coordinate) => {
     const { data } = await getTemperature(coordinate);
-    setWeatherData(data);
+    return data;
   };
 
   const onSearchButtonClick = () => {
-    console.log("clicked!!!", inputText);
+    setIsLoading(true);
     getGeoLocation(inputText)
       .then((res) => {
         // get long, lat of the first searched result in the array
-        [lat.current, long.current] = res.data.features[0].center;
-        getTemp(`${long.current},${lat.current}`);
+        const [lat, long] = res.data.features[0].center;
+        getTemp(`${long},${lat}`).then((data) => {
+          setWeatherData(data);
+        });
       })
       .catch((e) => {
         console.error(e);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
-  const Search = (
-    <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>
+  const Search = <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>;
+
+  const Loading = <Loader message="Loading .." />;
+  const WeatherInfo = (
+    <WeatherMain>
+      <Title>The Weather App</Title>
+      <SearchInput
+        placeholder="Search a city..."
+        value={inputText}
+        onChange={(e) => {
+          setInputText(e.target.value);
+        }}
+        suffix={Search}
+      />
+      <WeatherCard weather={weatherData} />
+    </WeatherMain>
   );
 
-  const renderOptions = () => {
-    if (isLoading) {
-      return <Loader message="Loading .." />;
-    }
-
-    return (
-      <WeatherMain>
-        <Title>The Weather App</Title>
-        <SearchInput
-          placeholder="Search a city..."
-          value={inputText}
-          onChange={(e) => {
-            setInputText(e.target.value);
-          }}
-          suffix={Search}
-        />
-        <WeatherCard
-          weather={weatherData}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-        />
-      </WeatherMain>
-    );
-  };
-  return <div className="App">{renderOptions()}</div>;
+  return <div className="App">{isLoading ? Loading : WeatherInfo}</div>;
 }
