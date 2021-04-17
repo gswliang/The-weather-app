@@ -54,7 +54,6 @@ export default function App() {
     } else {
       console.log("Geolocation is not supported by this browser.");
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -78,11 +77,12 @@ export default function App() {
       })
       .catch((e) => {
         console.error(e);
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
   };
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, [weatherData]);
 
   const Search = <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>;
 
