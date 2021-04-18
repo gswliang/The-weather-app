@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import "./styles.css";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import WeatherCard from "./WeatherCard";
 import Input from "./Input";
 import Loader from "./Loader";
 import { getGeoLocation, getTemperature } from "./api";
+import useGeoLocation from "./useGeoLocation";
 
 const WeatherMain = styled.div`
   display: flex;
@@ -21,9 +22,13 @@ const Title = styled.h1`
   font-weight: 800;
 `;
 
-const SearchInput = styled(Input)`
+const Form = styled.form`
   position: absolute;
   top: 160px;
+`;
+
+const SearchInput = styled(Input)`
+  position: relative;
 `;
 
 const SearchButton = styled.button`
@@ -37,61 +42,92 @@ const SearchButton = styled.button`
   letter-spacing: 2px;
 `;
 
+const rotate = keyframes`
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(20px);
+  }
+`;
+
+const NoDataText = styled.h1`
+  animation: ${rotate} 1.5s linear alternate infinite;
+`;
+
 export default function App() {
   const [inputText, setInputText] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [weatherData, setWeatherData] = useState();
-  const long = useRef(null);
-  const lat = useRef(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [weatherData, setWeatherData] = useState(null);
+  const [long, lat] = useGeoLocation();
+  const [message, setMessage] = useState("");
 
   const init = () => {
-    // get long/lat of the current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((res) => {
-        long.current = res.coords.longitude;
-        lat.current = res.coords.latitude;
-        getTemp(`${lat.current},${long.current}`);
-        setIsLoading(false);
-      });
-    } else {
-      console.log("Geolocation is not supported by this browser.");
+    setIsLoading(true);
+    if (!long || !lat) {
+      setMessage("Cannot retrieve weather data...");
+      return;
     }
+    getTemp(`${lat},${long}`).then((data) => {
+      if (data.error) {
+        return;
+      }
+      setWeatherData(data);
+    });
   };
 
   useEffect(() => {
     init();
-  }, []);
+  }, [lat, long]);
 
   const getTemp = async (coordinate) => {
     const { data } = await getTemperature(coordinate);
-    setWeatherData(data);
+    return data;
   };
 
-  const onSearchButtonClick = () => {
-    console.log("clicked!!!", inputText);
+  const onSearchButtonClick = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    if (!inputText) {
+      setMessage("Search for a city...");
+      setWeatherData(null);
+      setIsLoading(false);
+      return;
+    }
     getGeoLocation(inputText)
       .then((res) => {
         // get long, lat of the first searched result in the array
-        [lat.current, long.current] = res.data.features[0].center;
-        getTemp(`${long.current},${lat.current}`);
+        if (!res.data.features.length) {
+          setMessage("Cannot retrieve weather data...");
+          setWeatherData(null);
+          setIsLoading(false);
+          return;
+        }
+        const [lat, long] = res.data.features[0].center;
+        getTemp(`${long},${lat}`).then((data) => {
+          setWeatherData(data);
+        });
       })
       .catch((e) => {
         console.error(e);
       });
   };
 
-  const Search = (
-    <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>
-  );
+  useEffect(() => {
+    setIsLoading(false);
+  }, [weatherData]);
 
-  const renderOptions = () => {
-    if (isLoading) {
-      return <Loader message="Loading .." />;
-    }
+  const Search = <SearchButton>Search</SearchButton>;
 
-    return (
-      <WeatherMain>
-        <Title>The Weather App</Title>
+  const NoWeather = <NoDataText>{message}</NoDataText>;
+
+  const Loading = <Loader message="Loading .." />;
+
+  const WeatherInfo = (
+    <WeatherMain>
+      <Title>The Weather App</Title>
+      <Form onSubmit={onSearchButtonClick}>
         <SearchInput
           placeholder="Search a city..."
           value={inputText}
@@ -100,13 +136,10 @@ export default function App() {
           }}
           suffix={Search}
         />
-        <WeatherCard
-          weather={weatherData}
-          isLoading={isLoading}
-          setIsLoading={setIsLoading}
-        />
-      </WeatherMain>
-    );
-  };
-  return <div className="App">{renderOptions()}</div>;
+      </Form>
+      {weatherData ? <WeatherCard weather={weatherData} /> : NoWeather}
+    </WeatherMain>
+  );
+
+  return <div className="App">{isLoading ? Loading : WeatherInfo}</div>;
 }
