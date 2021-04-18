@@ -22,9 +22,13 @@ const Title = styled.h1`
   font-weight: 800;
 `;
 
-const SearchInput = styled(Input)`
+const Form = styled.form`
   position: absolute;
   top: 160px;
+`;
+
+const SearchInput = styled(Input)`
+  position: relative;
 `;
 
 const SearchButton = styled.button`
@@ -57,9 +61,14 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [weatherData, setWeatherData] = useState();
   const [long, lat] = useGeoLocation();
+  const [message, setMessage] = useState("");
 
   const init = () => {
     setIsLoading(true);
+    if (!long || !lat) {
+      setMessage("Cannot retrieve weather data...");
+      return;
+    }
     getTemp(`${lat},${long}`).then((data) => {
       if (data.error) {
         return;
@@ -77,8 +86,14 @@ export default function App() {
     return data;
   };
 
-  const onSearchButtonClick = () => {
+  const onSearchButtonClick = (e) => {
+    e.preventDefault();
     setIsLoading(true);
+    if (!inputText) {
+      setMessage("Search for a city...");
+      setIsLoading(false);
+      return;
+    }
     getGeoLocation(inputText)
       .then((res) => {
         // get long, lat of the first searched result in the array
@@ -96,23 +111,25 @@ export default function App() {
     setIsLoading(false);
   }, [weatherData]);
 
-  const Search = <SearchButton onClick={onSearchButtonClick}>Search</SearchButton>;
+  const Search = <SearchButton>Search</SearchButton>;
 
-  const NoWeather = <NoDataText>No weather data...</NoDataText>;
+  const NoWeather = <NoDataText>{message}</NoDataText>;
 
   const Loading = <Loader message="Loading .." />;
 
   const WeatherInfo = (
     <WeatherMain>
       <Title>The Weather App</Title>
-      <SearchInput
-        placeholder="Search a city..."
-        value={inputText}
-        onChange={(e) => {
-          setInputText(e.target.value);
-        }}
-        suffix={Search}
-      />
+      <Form onSubmit={onSearchButtonClick}>
+        <SearchInput
+          placeholder="Search a city..."
+          value={inputText}
+          onChange={(e) => {
+            setInputText(e.target.value);
+          }}
+          suffix={Search}
+        />
+      </Form>
       {weatherData ? <WeatherCard weather={weatherData} /> : NoWeather}
     </WeatherMain>
   );
