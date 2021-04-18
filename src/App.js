@@ -59,7 +59,7 @@ const NoDataText = styled.h1`
 export default function App() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [weatherData, setWeatherData] = useState();
+  const [weatherData, setWeatherData] = useState(null);
   const [long, lat] = useGeoLocation();
   const [message, setMessage] = useState("");
 
@@ -91,12 +91,19 @@ export default function App() {
     setIsLoading(true);
     if (!inputText) {
       setMessage("Search for a city...");
+      setWeatherData(null);
       setIsLoading(false);
       return;
     }
     getGeoLocation(inputText)
       .then((res) => {
         // get long, lat of the first searched result in the array
+        if (!res.data.features.length) {
+          setMessage("Cannot retrieve weather data...");
+          setWeatherData(null);
+          setIsLoading(false);
+          return;
+        }
         const [lat, long] = res.data.features[0].center;
         getTemp(`${long},${lat}`).then((data) => {
           setWeatherData(data);
