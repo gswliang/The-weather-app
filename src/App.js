@@ -79,7 +79,7 @@ export default function App() {
 
   useEffect(() => {
     init();
-  }, []);
+  }, [lat, long]);
 
   const getTemp = async (coordinate) => {
     const { data } = await getTemperature(coordinate);
